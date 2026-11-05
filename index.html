@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PTW – Leepang 2 Estate</title>
+<style>
+:root{--g:#1f5130;--g2:#2e7d4a;--bg:#f3f6f2;--card:#fff;--ink:#1d2a21;--mut:#64746a;--line:#d9e2da;--amb:#b7791f;--red:#b42318;--blu:#1d5fa8}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+header{background:var(--g);color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header .top{max-width:760px;margin:0 auto}
+header h1{margin:0;font-size:18px}
+header p{margin:2px 0 0;font-size:12px;opacity:.85}
+nav{display:flex;gap:6px;margin-top:10px}
+nav button{flex:1;border:0;padding:9px;border-radius:8px;background:rgba(255,255,255,.15);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+nav button.on{background:#fff;color:var(--g)}
+main{max-width:760px;margin:0 auto;padding:14px 12px 90px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 6px;color:var(--g);display:flex;gap:8px;align-items:center}
+.card h2 span{background:var(--g);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-grid;place-items:center;font-size:12px;flex:none}
+.hint{font-size:12px;color:var(--mut);margin:0 0 6px}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+label .req{color:var(--red)}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid #9fd0ad;border-color:var(--g2)}
+textarea{min-height:68px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:0 8px}
+@media(max-width:520px){.row{grid-template-columns:1fr}.row4{grid-template-columns:1fr 1fr}}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+@media(max-width:520px){.checks{grid-template-columns:1fr}}
+.checks label{display:flex;gap:8px;align-items:flex-start;font-weight:500;margin:0;padding:9px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:14px}
+.checks input{width:18px;height:18px;margin:1px 0 0;flex:none;accent-color:var(--g)}
+.checks label.on{background:#e8f3eb;border-color:var(--g2)}
+.btn{border:0;border-radius:10px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--g);color:#fff}
+.btn.sec{background:#fff;color:var(--g);border:1px solid var(--g)}
+.btn.red{background:var(--red)}.btn.blu{background:var(--blu)}.btn.amb{background:var(--amb)}
+.btn:disabled{opacity:.55;cursor:wait}
+.btn.sm{padding:8px 12px;font-size:13px;border-radius:8px}
+.submitbar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px;z-index:4}
+.submitbar div{max-width:760px;margin:0 auto;display:flex;gap:8px}
+.submitbar .btn{flex:1}
+.declare{display:flex;gap:10px;align-items:flex-start;font-weight:500;background:#fff8e6;border:1px solid #f0d58a;border-radius:8px;padding:10px;font-size:14px}
+.declare input{width:20px;height:20px;flex:none;accent-color:var(--g)}
+.hide{display:none!important}
+.warn{background:#fdecea;border:1px solid #f5b5ae;color:var(--red);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.ok{background:#e8f3eb;border:1px solid #9fd0ad;border-radius:12px;padding:16px;text-align:center}
+.ok b{font-size:20px;color:var(--g);display:block;margin:6px 0}
+.ok .btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.tools{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.tools input{flex:1;min-width:150px}
+.tools select{width:auto}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chip.on{background:var(--g);color:#fff;border-color:var(--g)}
+.rec{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.rec .head{padding:12px 14px;cursor:pointer}
+.rec .l1{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.rec .no{font-weight:700;font-size:14px}
+.rec .l2{font-size:13px;color:var(--mut);margin-top:4px}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.b-Pending{background:#fff3d6;color:#8a5a00}.b-Approved{background:#dcefe2;color:var(--g)}
+.b-Rejected{background:#fde2df;color:var(--red)}.b-Closed{background:#e4e7ec;color:#475467}
+.b-Expired{background:#fde2df;color:var(--red)}
+.rec .body{border-top:1px solid var(--line);padding:12px 14px;font-size:13px;background:#fbfcfb}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:4px 10px;margin-bottom:10px}
+.kv div:nth-child(odd){color:var(--mut)}
+@media(max-width:520px){.kv{grid-template-columns:1fr}.kv div:nth-child(odd){margin-top:6px;font-weight:600}}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.empty{text-align:center;color:var(--mut);padding:30px 10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.stats div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.stats b{display:block;font-size:20px}.stats span{font-size:11px;color:var(--mut)}
+dialog{border:0;border-radius:14px;padding:0;width:min(440px,94vw);box-shadow:0 10px 40px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{padding:16px}
+dialog h3{margin:0 0 4px;color:var(--g)}
+dialog .btns{display:flex;gap:8px;margin-top:14px}
+dialog .btns .btn{flex:1}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#1d2a21;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;max-width:90vw}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>Permit to Work (PTW)</h1>
+    <p>Leepang 2 Estate</p>
+    <nav>
+      <button id="tabNew" class="on" onclick="showTab('new')">New Permit</button>
+      <button id="tabRec" onclick="showTab('rec')">Records</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div id="cfgWarn" class="warn hide">Google Sheet not connected yet. Paste your Apps Script Web App URL into <b>SCRIPT_URL</b> in index.html.</div>
+
+  <!-- ============ NEW PERMIT ============ -->
+  <section id="viewNew">
+    <form id="ptwForm" autocomplete="off" novalidate>
+      <div class="card">
+        <h2><span>1</span>Work Details</h2>
+        <div class="row">
+          <div><label>Issue Date <span class="req">*</span></label><input type="date" name="Issue Date" required></div>
+          <div><label>Division / Block <span class="req">*</span></label><input name="Division / Block" placeholder="e.g. Div 2 / Block P05" required></div>
+        </div>
+        <label>Exact Location <span class="req">*</span></label>
+        <input name="Exact Location" placeholder="e.g. Labour Quarters Block C, Workshop, Field 14" required>
+        <label>Type of Work <span class="req">*</span></label>
+        <div class="checks" id="cWork"></div>
+        <label>Job Description <span class="req">*</span></label>
+        <textarea name="Job Description" placeholder="What work will be done, step by step" required></textarea>
+        <div class="row">
+          <div><label>Valid From <span class="req">*</span></label><input type="datetime-local" name="Valid From" required></div>
+          <div><label>Valid To <span class="req">*</span></label><input type="datetime-local" name="Valid To" required></div>
+        </div>
+        <label>Equipment / Tools</label>
+        <input name="Equipment / Tools" placeholder="e.g. welding set, ladder, chainsaw, sprayer">
+      </div>
+
+      <div class="card">
+        <h2><span>2</span>Applicant &amp; Workers</h2>
+        <div class="row">
+          <div><label>Applicant Name <span class="req">*</span></label><input name="Applicant" required></div>
+          <div><label>Position <span class="req">*</span></label><input name="Position" placeholder="e.g. Mandor, Contractor Supervisor" required></div>
+          <div><label>Company / Contractor</label><input name="Company / Contractor" placeholder="Leepang 2 Estate / contractor name"></div>
+          <div><label>Phone</label><input type="tel" name="Phone"></div>
+          <div><label>No. of Workers <span class="req">*</span></label><input type="number" min="1" name="No. of Workers" required></div>
+          <div><label>Emergency Contact</label><input name="Emergency Contact" placeholder="Name & phone"></div>
+        </div>
+        <label>Worker Names</label>
+        <textarea name="Worker Names" placeholder="One name per line"></textarea>
+      </div>
+
+      <div class="card">
+        <h2><span>3</span>Hazards Identified</h2>
+        <p class="hint">Tick all hazards for this job.</p>
+        <div class="checks" id="cHaz"></div>
+      </div>
+
+      <div class="card">
+        <h2><span>4</span>PPE Required</h2>
+        <div class="checks" id="cPpe"></div>
+      </div>
+
+      <div class="card">
+        <h2><span>5</span>Precautions Taken</h2>
+        <p class="hint">Tick only what has actually been done before work starts.</p>
+        <div class="checks" id="cPre"></div>
+        <div id="gasBox" class="hide">
+          <label style="margin-top:14px">Gas Test Readings (Confined Space / Hot Work)</label>
+          <p class="hint">Safe range: O2 19.5–23.5%, LEL &lt;10%, H2S &lt;10 ppm, CO &lt;25 ppm</p>
+          <div class="row4">
+            <div><label>O2 (%)</label><input type="number" step="0.1" name="Gas O2 (%)"></div>
+            <div><label>LEL (%)</label><input type="number" step="0.1" name="Gas LEL (%)"></div>
+            <div><label>H2S (ppm)</label><input type="number" step="0.1" name="Gas H2S (ppm)"></div>
+            <div><label>CO (ppm)</label><input type="number" step="0.1" name="Gas CO (ppm)"></div>
+          </div>
+          <label>Gas Tested By</label><input name="Gas Tested By">
+        </div>
+        <label>Additional Precautions</label>
+        <textarea name="Additional Precautions" placeholder="Anything else specific to this job"></textarea>
+      </div>
+
+      <div class="card">
+        <h2><span>6</span>Declaration</h2>
+        <label class="declare"><input type="checkbox" id="declare">
+          <span>I confirm the hazards have been explained to all workers, the precautions above are in place, and work will stop immediately if conditions change.</span></label>
+      </div>
+    </form>
+
+    <div id="okBox" class="ok hide">
+      ✅ Permit submitted — waiting for approval
+      <b id="okNo"></b>
+      <div class="btns">
+        <button class="btn sec sm" onclick="shareWA(lastPermit)">Share to WhatsApp</button>
+        <button class="btn sec sm" onclick="printPermit(lastPermit)">Print</button>
+        <button class="btn sm" onclick="newPermit()">New Permit</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RECORDS ============ -->
+  <section id="viewRec" class="hide">
+    <div class="stats" id="stats"></div>
+    <div class="tools">
+      <input id="q" placeholder="Search permit no, location, applicant…" oninput="renderList()">
+      <button class="btn sec sm" onclick="loadRecords()">↻ Refresh</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div id="list"><div class="empty">Loading…</div></div>
+  </section>
+</main>
+
+<div class="submitbar" id="submitBar">
+  <div>
+    <button class="btn sec" type="button" onclick="resetForm()">Clear</button>
+    <button class="btn" id="btnSubmit" type="button" onclick="submitPermit()">Submit Permit</button>
+  </div>
+</div>
+
+<!-- Approve / Reject / Close dialog -->
+<dialog id="dlg">
+  <form method="dialog" onsubmit="return false">
+    <h3 id="dTitle"></h3>
+    <p class="hint" id="dSub"></p>
+    <div id="dChecks" class="checks"></div>
+    <label>Your Name <span class="req">*</span></label><input id="dName">
+    <label>Approver PIN <span class="req">*</span></label><input id="dPin" type="password" inputmode="numeric">
+    <label>Remarks</label><textarea id="dRem"></textarea>
+    <div class="btns">
+      <button class="btn sec" type="button" onclick="dlg.close()">Cancel</button>
+      <button class="btn" id="dGo" type="button" onclick="doUpdate()">Confirm</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+/* ===== CONFIG: paste your Google Apps Script Web App URL here ===== */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWQf0KEJzXFQuuyNY0STvZEEuDSq30tmyP8YOKup9VBJpr7NRS9l8dZ4k0P7WxEA/exec';
+/* ================================================================== */
+
+const ESTATE = 'Leepang 2 Estate';
+const LISTS = {
+  cWork: ['Hot Work (welding / cutting / grinding)','Working at Height','Confined Space Entry','Electrical Work',
+          'Excavation / Trenching','Chemical / Pesticide Handling','Heavy Machinery / Vehicle',
+          'Palm / Tree Felling','Roofing / Building Repair','General Maintenance'],
+  cHaz: ['Fall from height','Fire / explosion','Electric shock','Chemical / toxic exposure','Oxygen deficiency / toxic gas',
+         'Moving machinery / vehicles','Falling objects (fronds, FFB, tools)','Overhead power lines','Underground cables / pipes',
+         'Snake / insect / animal bites','Heat stress','Noise','Sharp tools / cuts','Slippery / uneven ground'],
+  cPpe: ['Safety helmet','Safety boots','Gloves','Safety goggles / face shield','Ear protection','Respirator / mask',
+         'Full body harness','Reflective vest','Chemical apron / suit','Welding mask & apron','Long sleeves & trousers'],
+  cPre: ['Toolbox talk / JSA done','Workers trained & competent','Area barricaded & signage up','Equipment & tools inspected',
+         'Isolation / Lock-out Tag-out done','Fire extinguisher at site','Gas test done','Standby person / watcher assigned',
+         'First aid kit at site','Ladder / scaffold checked & secured','Emergency plan & assembly point briefed','Weather checked (no lightning / heavy rain)']
+};
+const CLOSE_CHECKS = ['Work completed','All workers out & accounted for','Tools & materials removed','Area cleaned & safe',
+                      'Isolations / LOTO removed','Barricades removed'];
+const NEEDS_GAS = ['Hot Work (welding / cutting / grinding)','Confined Space Entry'];
+
+let records = [], filter = 'All', lastPermit = null, pending = null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const connected = () => SCRIPT_URL && SCRIPT_URL.startsWith('https://script.google.com');
+
+function buildChecks(id, items, group) {
+  $(id).innerHTML = items.map(t => `<label><input type="checkbox" data-g="${group}" value="${esc(t)}"><span>${esc(t)}</span></label>`).join('');
+}
+for (const k in LISTS) buildChecks(k, LISTS[k], k);
+document.addEventListener('change', e => {
+  if (e.target.type === 'checkbox' && e.target.closest('.checks')) e.target.closest('label').classList.toggle('on', e.target.checked);
+  if (e.target.dataset.g === 'cWork') toggleGas();
+});
+function picked(group, root = document) { return [...root.querySelectorAll(`input[data-g="${group}"]:checked`)].map(i => i.value); }
+function toggleGas() { $('gasBox').classList.toggle('hide', !picked('cWork').some(w => NEEDS_GAS.includes(w))); }
+
+function toast(msg, ms = 2600) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), ms);
+}
+function showTab(t) {
+  $('viewNew').classList.toggle('hide', t !== 'new'); $('viewRec').classList.toggle('hide', t !== 'rec');
+  $('tabNew').classList.toggle('on', t === 'new'); $('tabRec').classList.toggle('on', t === 'rec');
+  $('submitBar').classList.toggle('hide', t !== 'new' || !$('okBox').classList.contains('hide'));
+  if (t === 'rec') loadRecords();
+  window.scrollTo(0, 0);
+}
+function fmt(v) {
+  if (!v) return '';
+  const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}:\d{2}))?/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}${m[4] ? ' ' + m[4] : ''}` : v;
+}
+function toDate(v) {
+  if (!v) return null;
+  let m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (m) return new Date(m[1], m[2] - 1, m[3], m[4], m[5]);
+  m = String(v).match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})/);
+  return m ? new Date(m[3], m[2] - 1, m[1], m[4], m[5]) : null;
+}
+
+function setDefaults() {
+  const now = new Date(), pad = n => String(n).padStart(2, '0');
+  const d = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const f = $('ptwForm');
+  f['Issue Date'].value = d;
+  f['Valid From'].value = `${d}T${pad(now.getHours())}:00`;
+  f['Valid To'].value = `${d}T17:00`;
+}
+function resetForm() {
+  if (!confirm('Clear the whole form?')) return;
+  $('ptwForm').reset(); document.querySelectorAll('.checks label.on').forEach(l => l.classList.remove('on'));
+  $('declare').checked = false; toggleGas(); setDefaults();
+}
+function newPermit() {
+  $('ptwForm').reset(); document.querySelectorAll('.checks label.on').forEach(l => l.classList.remove('on'));
+  $('declare').checked = false; toggleGas(); setDefaults();
+  $('ptwForm').classList.remove('hide'); $('okBox').classList.add('hide'); $('submitBar').classList.remove('hide');
+  window.scrollTo(0, 0);
+}
+
+async function submitPermit() {
+  const f = $('ptwForm');
+  const missing = [...f.querySelectorAll('[required]')].filter(i => !i.value.trim());
+  if (missing.length) {
+    const el = missing[0], prev = el.previousElementSibling;
+    const lab = prev && prev.tagName === 'LABEL' ? prev : el.parentElement.querySelector('label');
+    el.focus(); return toast('Please fill in: ' + lab.textContent.replace('*', '').trim());
+  }
+  if (!picked('cWork').length) return toast('Select at least one Type of Work');
+  if (!picked('cHaz').length) return toast('Tick at least one hazard');
+  if (!picked('cPpe').length) return toast('Select the PPE required');
+  if (toDate(f['Valid To'].value) <= toDate(f['Valid From'].value)) return toast('"Valid To" must be after "Valid From"');
+  if (!$('declare').checked) return toast('Please tick the declaration');
+  if (!connected()) return toast('Google Sheet not connected yet (SCRIPT_URL).');
+
+  const data = {};
+  [...f.elements].forEach(el => { if (el.name && el.type !== 'checkbox') data[el.name] = el.value.trim(); });
+  data['Issue Date'] = fmt(data['Issue Date']);
+  data['Valid From'] = fmt(data['Valid From']);
+  data['Valid To'] = fmt(data['Valid To']);
+  data['Work Types'] = picked('cWork').join('; ');
+  data['Hazards'] = picked('cHaz').join('; ');
+  data['PPE Required'] = picked('cPpe').join('; ');
+  data['Precautions'] = picked('cPre').join('; ');
+
+  const btn = $('btnSubmit'); btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const res = await post({ action: 'create', data });
+    if (!res.ok) throw new Error(res.error);
+    lastPermit = { ...data, 'Permit No': res.permitNo, Status: 'Pending' };
+    $('okNo').textContent = res.permitNo;
+    f.classList.add('hide'); $('okBox').classList.remove('hide'); $('submitBar').classList.add('hide');
+    window.scrollTo(0, 0);
+  } catch (err) {
+    toast('Not saved: ' + err.message, 4000);
+  } finally { btn.disabled = false; btn.textContent = 'Submit Permit'; }
+}
+
+async function post(body) {
+  // Sent as GET (same as loading records) – avoids browser POST/redirect problems with Apps Script
+  const url = SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(body)) + '&t=' + Date.now();
+  const r = await fetch(url, { cache: 'no-store' });
+  return r.json();
+}
+
+/* ===== Records ===== */
+async function loadRecords() {
+  if (!connected()) { $('list').innerHTML = '<div class="empty">Google Sheet not connected yet.</div>'; return; }
+  $('list').innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const r = await (await fetch(SCRIPT_URL)).json();
+    if (!r.ok) throw new Error(r.error);
+    records = r.rows; renderList();
+  } catch (err) { $('list').innerHTML = `<div class="empty">Could not load records: ${esc(err.message)}</div>`; }
+}
+function statusOf(r) {
+  if (r.Status === 'Approved') { const t = toDate(r['Valid To']); if (t && t < new Date()) return 'Expired'; }
+  return r.Status || 'Pending';
+}
+function renderList() {
+  const counts = { All: records.length, Pending: 0, Approved: 0, Expired: 0, Rejected: 0, Closed: 0 };
+  records.forEach(r => counts[statusOf(r)]++);
+  $('stats').innerHTML = [['Pending','#8a5a00'],['Approved','#1f5130'],['Expired','#b42318'],['Closed','#475467']]
+    .map(([k, c]) => `<div><b style="color:${c}">${counts[k]}</b><span>${k === 'Approved' ? 'Active' : k}</span></div>`).join('');
+  $('chips').innerHTML = Object.keys(counts).map(k => `<button class="chip ${filter === k ? 'on' : ''}" onclick="filter='${k}';renderList()">${k} (${counts[k]})</button>`).join('');
+  const q = $('q').value.toLowerCase();
+  const rows = records.filter(r => (filter === 'All' || statusOf(r) === filter) && (!q || Object.values(r).join(' ').toLowerCase().includes(q)));
+  if (!rows.length) { $('list').innerHTML = '<div class="empty">No permits found.</div>'; return; }
+  $('list').innerHTML = rows.map(r => {
+    const s = statusOf(r), i = records.indexOf(r);
+    return `<div class="rec">
+      <div class="head" onclick="this.nextElementSibling.classList.toggle('hide')">
+        <div class="l1"><span class="no">${esc(r['Permit No'])}</span><span class="badge b-${s}">${s}</span></div>
+        <div class="l2">${esc(r['Work Types'])}</div>
+        <div class="l2">📍 ${esc(r['Division / Block'])} – ${esc(r['Exact Location'])} · 👤 ${esc(r.Applicant)}</div>
+        <div class="l2">🕒 ${esc(r['Valid From'])} → ${esc(r['Valid To'])}</div>
+      </div>
+      <div class="body hide">
+        <div class="kv">${detailRows(r)}</div>
+        <div class="acts">
+          ${r.Status === 'Pending' ? `<button class="btn sm" onclick="openDlg(${i},'Approved')">Approve</button><button class="btn red sm" onclick="openDlg(${i},'Rejected')">Reject</button>` : ''}
+          ${r.Status === 'Approved' ? `<button class="btn blu sm" onclick="openDlg(${i},'Closed')">Close Permit</button>` : ''}
+          <button class="btn sec sm" onclick="printPermit(records[${i}])">Print</button>
+          <button class="btn sec sm" onclick="shareWA(records[${i}])">WhatsApp</button>
+        </div>
+      </div></div>`;
+  }).join('');
+}
+const DETAIL_KEYS = ['Issue Date','Submitted At','Job Description','Equipment / Tools','Position','Company / Contractor','Phone','No. of Workers',
+  'Worker Names','Emergency Contact','Hazards','PPE Required','Precautions','Gas O2 (%)','Gas LEL (%)','Gas H2S (ppm)','Gas CO (ppm)','Gas Tested By',
+  'Additional Precautions','Approved By','Approved At','Approval Remarks','Closed By','Closed At','Closure Checks','Closure Remarks'];
+function detailRows(r) {
+  return DETAIL_KEYS.filter(k => r[k]).map(k => `<div>${esc(k)}</div><div>${esc(r[k]).replace(/\n/g, '<br>').replace(/; /g, '<br>• ').replace(/^(?=.*<br>• )/, '• ')}</div>`).join('');
+}
+
+/* ===== Approve / Reject / Close ===== */
+const dlg = $('dlg');
+function openDlg(i, status) {
+  const r = records[i]; pending = { permitNo: r['Permit No'], status };
+  $('dTitle').textContent = { Approved: 'Approve Permit', Rejected: 'Reject Permit', Closed: 'Close Permit' }[status];
+  $('dSub').textContent = r['Permit No'] + ' · ' + r['Exact Location'];
+  $('dChecks').innerHTML = status === 'Closed' ? CLOSE_CHECKS.map(t => `<label><input type="checkbox" data-g="close" value="${esc(t)}"><span>${esc(t)}</span></label>`).join('') : '';
+  $('dGo').className = 'btn' + (status === 'Rejected' ? ' red' : status === 'Closed' ? ' blu' : '');
+  $('dRem').value = ''; $('dPin').value = '';
+  try { $('dName').value = localStorage.getItem('ptwApprover') || ''; } catch (e) {}
+  dlg.showModal();
+}
+async function doUpdate() {
+  const name = $('dName').value.trim(), pin = $('dPin').value.trim(), remarks = $('dRem').value.trim();
+  if (!name || !pin) return toast('Name and PIN are required');
+  if (pending.status === 'Rejected' && !remarks) return toast('Please give a reason for rejecting');
+  let checks = '';
+  if (pending.status === 'Closed') {
+    const c = picked('close', dlg);
+    if (c.length < CLOSE_CHECKS.length && !confirm('Not all close-out items are ticked. Close anyway?')) return;
+    checks = c.join('; ');
+  }
+  const b = $('dGo'); b.disabled = true;
+  try {
+    const res = await post({ action: 'update', ...pending, name, pin, remarks, checks });
+    if (!res.ok) throw new Error(res.error);
+    try { localStorage.setItem('ptwApprover', name); } catch (e) {}
+    dlg.close(); toast('Permit ' + pending.status.toLowerCase()); loadRecords();
+  } catch (err) { toast('Failed: ' + err.message, 4000); }
+  finally { b.disabled = false; }
+}
+
+/* ===== Share & Print ===== */
+function shareWA(r) {
+  if (!r) return;
+  const t = `*PERMIT TO WORK – ${ESTATE}*\nNo: ${r['Permit No']}\nStatus: ${statusOf(r)}\nWork: ${r['Work Types']}\nLocation: ${r['Division / Block']} – ${r['Exact Location']}\nValid: ${r['Valid From']} → ${r['Valid To']}\nApplicant: ${r.Applicant} (${r.Position})\nWorkers: ${r['No. of Workers']}\nJob: ${r['Job Description']}`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank');
+}
+function printPermit(r) {
+  if (!r) return;
+  const list = (v, all) => all.map(x => `<span class="ck">${(v || '').split('; ').includes(x) ? '☑' : '☐'} ${esc(x)}</span>`).join('');
+  const w = window.open('', '_blank');
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(r['Permit No'])}</title><style>
+    body{font-family:Arial,sans-serif;font-size:11.5px;color:#000;margin:18px}
+    h1{font-size:18px;margin:0}.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1f5130;padding-bottom:6px;margin-bottom:8px}
+    .no{font-size:15px;font-weight:bold;text-align:right}.st{font-size:12px}
+    h2{font-size:12px;background:#1f5130;color:#fff;padding:4px 6px;margin:10px 0 4px}
+    table{width:100%;border-collapse:collapse}td{border:1px solid #999;padding:4px 6px;vertical-align:top}td.k{width:28%;background:#f2f2f2;font-weight:bold}
+    .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px 10px}.ck{display:block}
+    .sig{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:6px}.sig div{border:1px solid #999;padding:6px;min-height:70px}
+    .sig b{display:block;margin-bottom:4px}.note{font-size:10px;margin-top:10px;color:#333}
+    @media print{body{margin:8mm}}</style></head><body>
+    <div class="hd"><div><h1>PERMIT TO WORK</h1>${esc(ESTATE)}</div><div class="no">${esc(r['Permit No'])}<div class="st">Status: ${esc(statusOf(r))}</div></div></div>
+    <h2>1. WORK DETAILS</h2><table>
+      <tr><td class="k">Issue Date</td><td>${esc(r['Issue Date'])}</td></tr>
+      <tr><td class="k">Division / Block</td><td>${esc(r['Division / Block'])}</td></tr>
+      <tr><td class="k">Exact Location</td><td>${esc(r['Exact Location'])}</td></tr>
+      <tr><td class="k">Valid From / To</td><td>${esc(r['Valid From'])} &nbsp;→&nbsp; ${esc(r['Valid To'])}</td></tr>
+      <tr><td class="k">Job Description</td><td>${esc(r['Job Description']).replace(/\n/g,'<br>')}</td></tr>
+      <tr><td class="k">Equipment / Tools</td><td>${esc(r['Equipment / Tools'])}</td></tr></table>
+    <h2>2. TYPE OF WORK</h2><div class="grid">${list(r['Work Types'], LISTS.cWork)}</div>
+    <h2>3. APPLICANT &amp; WORKERS</h2><table>
+      <tr><td class="k">Applicant / Position</td><td>${esc(r.Applicant)} – ${esc(r.Position)}</td></tr>
+      <tr><td class="k">Company / Phone</td><td>${esc(r['Company / Contractor'])} ${r.Phone ? '/ ' + esc(r.Phone) : ''}</td></tr>
+      <tr><td class="k">No. of Workers</td><td>${esc(r['No. of Workers'])}</td></tr>
+      <tr><td class="k">Worker Names</td><td>${esc(r['Worker Names']).replace(/\n/g,', ')}</td></tr>
+      <tr><td class="k">Emergency Contact</td><td>${esc(r['Emergency Contact'])}</td></tr></table>
+    <h2>4. HAZARDS</h2><div class="grid">${list(r.Hazards, LISTS.cHaz)}</div>
+    <h2>5. PPE REQUIRED</h2><div class="grid">${list(r['PPE Required'], LISTS.cPpe)}</div>
+    <h2>6. PRECAUTIONS</h2><div class="grid">${list(r.Precautions, LISTS.cPre)}</div>
+    ${(r['Gas O2 (%)'] || r['Gas LEL (%)']) ? `<table style="margin-top:4px"><tr><td class="k">Gas Test</td><td>O2: ${esc(r['Gas O2 (%)'])}% &nbsp; LEL: ${esc(r['Gas LEL (%)'])}% &nbsp; H2S: ${esc(r['Gas H2S (ppm)'])} ppm &nbsp; CO: ${esc(r['Gas CO (ppm)'])} ppm &nbsp; By: ${esc(r['Gas Tested By'])}</td></tr></table>` : ''}
+    ${r['Additional Precautions'] ? `<table style="margin-top:4px"><tr><td class="k">Additional Precautions</td><td>${esc(r['Additional Precautions'])}</td></tr></table>` : ''}
+    <h2>7. AUTHORISATION &amp; CLOSE-OUT</h2>
+    <div class="sig">
+      <div><b>Applicant</b>${esc(r.Applicant)}<br>${esc(r['Submitted At'] || '')}<br><br>Sign: ____________</div>
+      <div><b>${r.Status === 'Rejected' ? 'Rejected by' : 'Approved by'}</b>${esc(r['Approved By'] || '')}<br>${esc(r['Approved At'] || '')}<br>${esc(r['Approval Remarks'] || '')}<br>Sign: ____________</div>
+      <div><b>Closed by</b>${esc(r['Closed By'] || '')}<br>${esc(r['Closed At'] || '')}<br>${esc(r['Closure Remarks'] || '')}<br>Sign: ____________</div>
+    </div>
+    ${r['Closure Checks'] ? `<p><b>Close-out checks:</b> ${esc(r['Closure Checks'])}</p>` : ''}
+    <p class="note">This permit is valid only for the work, location and period stated. Keep a copy at the work site. Work must stop and the permit be re-assessed if conditions change.</p>
+    <script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+
+/* ===== init ===== */
+setDefaults();
+if (!connected()) $('cfgWarn').classList.remove('hide');
+</script>
+</body>
+</html>

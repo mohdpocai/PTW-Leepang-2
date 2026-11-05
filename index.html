@@ -72,6 +72,12 @@ textarea{min-height:68px;resize:vertical}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
 .stats div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
 .stats b{display:block;font-size:20px}.stats span{font-size:11px;color:var(--mut)}
+.banner{background:#e8f0fb;border:1px solid #9dbbe6;color:var(--blu);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.banner button{background:none;border:0;color:var(--blu);font:inherit;font-weight:700;cursor:pointer}
+.outcome{display:grid;gap:6px;margin-top:4px}
+.outcome label{display:flex;gap:8px;align-items:flex-start;font-weight:500;margin:0;padding:9px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.outcome input{width:18px;height:18px;flex:none;margin:1px 0 0;accent-color:var(--g)}
+.note2{font-size:12px;color:var(--blu);margin-top:4px}
 dialog{border:0;border-radius:14px;padding:0;width:min(440px,94vw);box-shadow:0 10px 40px rgba(0,0,0,.3)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
 dialog form{padding:16px}
@@ -98,7 +104,9 @@ dialog .btns .btn{flex:1}
 
   <!-- ============ NEW PERMIT ============ -->
   <section id="viewNew">
+    <div id="renewBanner" class="banner hide"><span>↪ Continuing <b id="renewNo"></b> – check dates &amp; tick precautions again</span><button type="button" onclick="cancelRenew()">✕ Cancel</button></div>
     <form id="ptwForm" autocomplete="off" novalidate>
+      <input type="hidden" name="Continuation Of">
       <div class="card">
         <h2><span>1</span>Work Details</h2>
         <div class="row">
@@ -206,6 +214,14 @@ dialog .btns .btn{flex:1}
   <form method="dialog" onsubmit="return false">
     <h3 id="dTitle"></h3>
     <p class="hint" id="dSub"></p>
+    <div id="dOutcome" class="hide">
+      <label>Work Status <span class="req">*</span></label>
+      <div class="outcome">
+        <label><input type="radio" name="outcome" value="Work completed" checked><span><b>Work completed</b></span></label>
+        <label><input type="radio" name="outcome" value="Work not complete - to continue under new permit"><span><b>Work not complete</b> – site made safe, will continue under a new permit</span></label>
+      </div>
+      <label>Close-out checks</label>
+    </div>
     <div id="dChecks" class="checks"></div>
     <label>Your Name <span class="req">*</span></label><input id="dName">
     <label>Approver PIN <span class="req">*</span></label><input id="dPin" type="password" inputmode="numeric">
@@ -236,7 +252,7 @@ const LISTS = {
          'Isolation / Lock-out Tag-out done','Fire extinguisher at site','Gas test done','Standby person / watcher assigned',
          'First aid kit at site','Ladder / scaffold checked & secured','Emergency plan & assembly point briefed','Weather checked (no lightning / heavy rain)']
 };
-const CLOSE_CHECKS = ['Work completed','All workers out & accounted for','Tools & materials removed','Area cleaned & safe',
+const CLOSE_CHECKS = ['All workers out & accounted for','Tools & materials removed','Area cleaned & safe',
                       'Isolations / LOTO removed','Barricades removed'];
 const NEEDS_GAS = ['Hot Work (welding / cutting / grinding)','Confined Space Entry'];
 
@@ -290,12 +306,10 @@ function setDefaults() {
 }
 function resetForm() {
   if (!confirm('Clear the whole form?')) return;
-  $('ptwForm').reset(); document.querySelectorAll('.checks label.on').forEach(l => l.classList.remove('on'));
-  $('declare').checked = false; toggleGas(); setDefaults();
+  clearForm();
 }
 function newPermit() {
-  $('ptwForm').reset(); document.querySelectorAll('.checks label.on').forEach(l => l.classList.remove('on'));
-  $('declare').checked = false; toggleGas(); setDefaults();
+  clearForm();
   $('ptwForm').classList.remove('hide'); $('okBox').classList.add('hide'); $('submitBar').classList.remove('hide');
   window.scrollTo(0, 0);
 }
@@ -333,7 +347,7 @@ async function submitPermit() {
     lastPermit = { ...data, 'Permit No': res.permitNo, Status: 'Pending' };
     $('okNo').textContent = res.permitNo;
     if (res.pdf) { $('okPdf').href = res.pdf; $('okPdf').classList.remove('hide'); } else $('okPdf').classList.add('hide');
-    f.classList.add('hide'); $('okBox').classList.remove('hide'); $('submitBar').classList.add('hide');
+    f.classList.add('hide'); $('renewBanner').classList.add('hide'); $('okBox').classList.remove('hide'); $('submitBar').classList.add('hide');
     window.scrollTo(0, 0);
   } catch (err) {
     toast('Not saved: ' + err.message, 4000);
@@ -378,12 +392,15 @@ function renderList() {
         <div class="l2">${esc(r['Work Types'])}</div>
         <div class="l2">📍 ${esc(r['Division / Block'])} – ${esc(r['Exact Location'])} · 👤 ${esc(r.Applicant)}</div>
         <div class="l2">🕒 ${esc(r['Valid From'])} → ${esc(r['Valid To'])}</div>
+        ${r['Continuation Of'] ? `<div class="note2">↪ Continues ${esc(r['Continuation Of'])}</div>` : ''}
+        ${r['Close Outcome'] && r['Close Outcome'] !== 'Work completed' ? `<div class="note2">⏸ Work not complete – to continue</div>` : ''}
       </div>
       <div class="body hide">
         <div class="kv">${detailRows(r)}</div>
         <div class="acts">
           ${r.Status === 'Pending' ? `<button class="btn sm" onclick="openDlg(${i},'Approved')">Approve</button><button class="btn red sm" onclick="openDlg(${i},'Rejected')">Reject</button>` : ''}
           ${r.Status === 'Approved' ? `<button class="btn blu sm" onclick="openDlg(${i},'Closed')">Close Permit</button>` : ''}
+          ${(s === 'Closed' || s === 'Expired') ? `<button class="btn amb sm" onclick="renewPermit(${i})">Renew / Continue</button>` : ''}
           ${r.PDF ? `<a class="btn sec sm" style="text-decoration:none" href="${esc(r.PDF)}" target="_blank" rel="noopener">PDF</a>` : ''}
           <button class="btn sec sm" onclick="printPermit(records[${i}])">Print</button>
           <button class="btn sec sm" onclick="shareWA(records[${i}])">WhatsApp</button>
@@ -391,11 +408,43 @@ function renderList() {
       </div></div>`;
   }).join('');
 }
-const DETAIL_KEYS = ['Issue Date','Submitted At','Job Description','Equipment / Tools','Position','Company / Contractor','Phone','No. of Workers',
+const DETAIL_KEYS = ['Continuation Of','Close Outcome','Issue Date','Submitted At','Job Description','Equipment / Tools','Position','Company / Contractor','Phone','No. of Workers',
   'Worker Names','Emergency Contact','Hazards','PPE Required','Precautions','Gas O2 (%)','Gas LEL (%)','Gas H2S (ppm)','Gas CO (ppm)','Gas Tested By',
   'Additional Precautions','Approved By','Approved At','Approval Remarks','Closed By','Closed At','Closure Checks','Closure Remarks'];
 function detailRows(r) {
   return DETAIL_KEYS.filter(k => r[k]).map(k => `<div>${esc(k)}</div><div>${esc(r[k]).replace(/\n/g, '<br>').replace(/; /g, '<br>• ').replace(/^(?=.*<br>• )/, '• ')}</div>`).join('');
+}
+
+/* ===== Renew / Continue ===== */
+const RENEW_SKIP = ['Issue Date','Valid From','Valid To','Gas O2 (%)','Gas LEL (%)','Gas H2S (ppm)','Gas CO (ppm)','Gas Tested By','Continuation Of'];
+function renewPermit(i) {
+  const r = records[i];
+  clearForm();
+  const f = $('ptwForm');
+  [...f.elements].forEach(el => {
+    if (el.name && el.type !== 'checkbox' && !RENEW_SKIP.includes(el.name) && r[el.name] !== undefined) el.value = r[el.name];
+  });
+  f['Continuation Of'].value = r['Permit No'];
+  // tick same work types, hazards and PPE; precautions must be re-checked on site
+  const tick = (group, val) => {
+    const list = String(val || '').split('; ');
+    document.querySelectorAll(`input[data-g="${group}"]`).forEach(c => {
+      c.checked = list.includes(c.value); c.closest('label').classList.toggle('on', c.checked);
+    });
+  };
+  tick('cWork', r['Work Types']); tick('cHaz', r.Hazards); tick('cPpe', r['PPE Required']);
+  toggleGas();
+  $('renewNo').textContent = r['Permit No']; $('renewBanner').classList.remove('hide');
+  $('ptwForm').classList.remove('hide'); $('okBox').classList.add('hide');
+  showTab('new');
+  if (statusOf(r) === 'Expired') toast(r['Permit No'] + ' is still open – remember to close it', 4000);
+}
+function cancelRenew() { clearForm(); }
+function clearForm() {
+  $('ptwForm').reset(); document.querySelectorAll('.checks label.on').forEach(l => l.classList.remove('on'));
+  $('ptwForm')['Continuation Of'].value = '';
+  $('declare').checked = false; toggleGas(); setDefaults();
+  $('renewBanner').classList.add('hide');
 }
 
 /* ===== Approve / Reject / Close ===== */
@@ -404,6 +453,8 @@ function openDlg(i, status) {
   const r = records[i]; pending = { permitNo: r['Permit No'], status };
   $('dTitle').textContent = { Approved: 'Approve Permit', Rejected: 'Reject Permit', Closed: 'Close Permit' }[status];
   $('dSub').textContent = r['Permit No'] + ' · ' + r['Exact Location'];
+  $('dOutcome').classList.toggle('hide', status !== 'Closed');
+  dlg.querySelector('input[name=outcome]').checked = true;
   $('dChecks').innerHTML = status === 'Closed' ? CLOSE_CHECKS.map(t => `<label><input type="checkbox" data-g="close" value="${esc(t)}"><span>${esc(t)}</span></label>`).join('') : '';
   $('dGo').className = 'btn' + (status === 'Rejected' ? ' red' : status === 'Closed' ? ' blu' : '');
   $('dRem').value = ''; $('dPin').value = '';
@@ -414,15 +465,16 @@ async function doUpdate() {
   const name = $('dName').value.trim(), pin = $('dPin').value.trim(), remarks = $('dRem').value.trim();
   if (!name || !pin) return toast('Name and PIN are required');
   if (pending.status === 'Rejected' && !remarks) return toast('Please give a reason for rejecting');
-  let checks = '';
+  let checks = '', outcome = '';
   if (pending.status === 'Closed') {
     const c = picked('close', dlg);
     if (c.length < CLOSE_CHECKS.length && !confirm('Not all close-out items are ticked. Close anyway?')) return;
     checks = c.join('; ');
+    outcome = dlg.querySelector('input[name=outcome]:checked').value;
   }
   const b = $('dGo'); b.disabled = true;
   try {
-    const res = await post({ action: 'update', ...pending, name, pin, remarks, checks });
+    const res = await post({ action: 'update', ...pending, name, pin, remarks, checks, outcome });
     if (!res.ok) throw new Error(res.error);
     try { localStorage.setItem('ptwApprover', name); } catch (e) {}
     dlg.close(); toast('Permit ' + pending.status.toLowerCase()); loadRecords();
@@ -452,6 +504,7 @@ function printPermit(r) {
     @media print{body{margin:8mm}}</style></head><body>
     <div class="hd"><div><h1>PERMIT TO WORK</h1>${esc(ESTATE)}</div><div class="no">${esc(r['Permit No'])}<div class="st">Status: ${esc(statusOf(r))}</div></div></div>
     <h2>1. WORK DETAILS</h2><table>
+      ${r['Continuation Of'] ? `<tr><td class="k">Continuation Of</td><td><b>${esc(r['Continuation Of'])}</b> (renewed permit)</td></tr>` : ''}
       <tr><td class="k">Issue Date</td><td>${esc(r['Issue Date'])}</td></tr>
       <tr><td class="k">Division / Block</td><td>${esc(r['Division / Block'])}</td></tr>
       <tr><td class="k">Exact Location</td><td>${esc(r['Exact Location'])}</td></tr>
@@ -476,6 +529,7 @@ function printPermit(r) {
       <div><b>${r.Status === 'Rejected' ? 'Rejected by' : 'Approved by'}</b>${esc(r['Approved By'] || '')}<br>${esc(r['Approved At'] || '')}<br>${esc(r['Approval Remarks'] || '')}<br>Sign: ____________</div>
       <div><b>Closed by</b>${esc(r['Closed By'] || '')}<br>${esc(r['Closed At'] || '')}<br>${esc(r['Closure Remarks'] || '')}<br>Sign: ____________</div>
     </div>
+    ${r['Close Outcome'] ? `<p><b>Outcome:</b> ${esc(r['Close Outcome'])}</p>` : ''}
     ${r['Closure Checks'] ? `<p><b>Close-out checks:</b> ${esc(r['Closure Checks'])}</p>` : ''}
     <p class="note">This permit is valid only for the work, location and period stated. Keep a copy at the work site. Work must stop and the permit be re-assessed if conditions change.</p>
     <script>window.onload=()=>window.print()<\/script></body></html>`);

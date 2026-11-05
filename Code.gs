@@ -34,7 +34,8 @@ const HEADERS = [
   'Precautions', 'Gas O2 (%)', 'Gas LEL (%)', 'Gas H2S (ppm)', 'Gas CO (ppm)', 'Gas Tested By',
   'Additional Precautions', 'Emergency Contact', 'Status',
   'Approved By', 'Approved At', 'Approval Remarks',
-  'Closed By', 'Closed At', 'Closure Checks', 'Closure Remarks', 'Last Updated', 'PDF'
+  'Closed By', 'Closed At', 'Closure Checks', 'Closure Remarks', 'Last Updated', 'PDF',
+  'Continuation Of', 'Close Outcome'
 ];
 
 function getSheet_() {
@@ -146,6 +147,7 @@ function update_(b) {
     sh.getRange(row, col('Closed At')).setValue(t);
     sh.getRange(row, col('Closure Checks')).setValue(b.checks || '');
     sh.getRange(row, col('Closure Remarks')).setValue(b.remarks || '');
+    sh.getRange(row, col('Close Outcome')).setValue(b.outcome || 'Work completed');
   } else {
     return { ok: false, error: 'Unknown status' };
   }
@@ -228,7 +230,7 @@ const PDF_LISTS = {
   pre:  ['Toolbox talk / JSA done','Workers trained & competent','Area barricaded & signage up','Equipment & tools inspected',
          'Isolation / Lock-out Tag-out done','Fire extinguisher at site','Gas test done','Standby person / watcher assigned',
          'First aid kit at site','Ladder / scaffold checked & secured','Emergency plan & assembly point briefed','Weather checked (no lightning / heavy rain)'],
-  close:['Work completed','All workers out & accounted for','Tools & materials removed','Area cleaned & safe',
+  close:['All workers out & accounted for','Tools & materials removed','Area cleaned & safe',
          'Isolations / LOTO removed','Barricades removed']
 };
 
@@ -254,6 +256,7 @@ function pdfHtml_(r) {
     '<table class="hd"><tr><td><h1>PERMIT TO WORK</h1>Leepang 2 Estate</td>' +
     '<td class="no">' + e(r['Permit No']) + '<br><span style="font-size:11px;color:' + stColor + '">Status: ' + e(status) + '</span></td></tr></table>' +
     '<h2>1. WORK DETAILS</h2><table class="t">' +
+      (r['Continuation Of'] ? kv('Continuation Of', '<b>' + e(r['Continuation Of']) + '</b> (renewed permit)') : '') +
       kv('Issue Date', e(r['Issue Date'])) + kv('Division / Block', e(r['Division / Block'])) +
       kv('Exact Location', e(r['Exact Location'])) + kv('Valid From / To', e(r['Valid From']) + ' &nbsp;to&nbsp; ' + e(r['Valid To'])) +
       kv('Job Description', e(r['Job Description'])) + kv('Equipment / Tools', e(r['Equipment / Tools'])) + '</table>' +
@@ -273,7 +276,9 @@ function pdfHtml_(r) {
         '<br>' + e(r['Approval Remarks']) + '<br>Sign: ______________</td>' +
       '<td><b>Closed by</b>' + e(r['Closed By']) + '<br>' + e(r['Closed At']) + '<br>' + e(r['Closure Remarks']) + '<br>Sign: ______________</td>' +
     '</tr></table>' +
-    '<h2>8. CLOSE-OUT</h2>' + pdfChecks_(r['Closure Checks'], PDF_LISTS.close) +
+    '<h2>8. CLOSE-OUT</h2>' +
+    (r['Close Outcome'] ? '<p style="margin:2px 0 4px;font-size:11px"><b>Outcome:</b> ' + e(r['Close Outcome']) + '</p>' : '') +
+    pdfChecks_(r['Closure Checks'], PDF_LISTS.close) +
     '<p class="note">This permit is valid only for the work, location and period stated. Keep a copy at the work site. ' +
     'Work must stop and the permit be re-assessed if conditions change. Generated ' + e(Utilities.formatDate(new Date(), TZ, 'dd/MM/yyyy HH:mm')) + '.</p>' +
     '</body></html>';

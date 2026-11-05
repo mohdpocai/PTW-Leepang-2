@@ -328,6 +328,7 @@ async function submitPermit() {
   try {
     const res = await post({ action: 'create', data });
     if (!res.ok) throw new Error(res.error);
+    if (!res.permitNo) throw new Error('Google Script is still the OLD version. In Apps Script paste the new Code.gs, then Deploy > Manage deployments > Edit > New version > Deploy.');
     lastPermit = { ...data, 'Permit No': res.permitNo, Status: 'Pending' };
     $('okNo').textContent = res.permitNo;
     f.classList.add('hide'); $('okBox').classList.remove('hide'); $('submitBar').classList.add('hide');
@@ -349,7 +350,7 @@ async function loadRecords() {
   if (!connected()) { $('list').innerHTML = '<div class="empty">Google Sheet not connected yet.</div>'; return; }
   $('list').innerHTML = '<div class="empty">Loading…</div>';
   try {
-    const r = await (await fetch(SCRIPT_URL)).json();
+    const r = await (await fetch(SCRIPT_URL + '?t=' + Date.now(), { cache: 'no-store' })).json();
     if (!r.ok) throw new Error(r.error);
     records = r.rows; renderList();
   } catch (err) { $('list').innerHTML = `<div class="empty">Could not load records: ${esc(err.message)}</div>`; }

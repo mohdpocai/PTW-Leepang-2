@@ -175,6 +175,7 @@ dialog .btns .btn{flex:1}
       <b id="okNo"></b>
       <div class="btns">
         <button class="btn sec sm" onclick="shareWA(lastPermit)">Share to WhatsApp</button>
+        <a id="okPdf" class="btn sec sm hide" style="text-decoration:none" target="_blank" rel="noopener">PDF</a>
         <button class="btn sec sm" onclick="printPermit(lastPermit)">Print</button>
         <button class="btn sm" onclick="newPermit()">New Permit</button>
       </div>
@@ -331,6 +332,7 @@ async function submitPermit() {
     if (!res.permitNo) throw new Error('Google Script is still the OLD version. In Apps Script paste the new Code.gs, then Deploy > Manage deployments > Edit > New version > Deploy.');
     lastPermit = { ...data, 'Permit No': res.permitNo, Status: 'Pending' };
     $('okNo').textContent = res.permitNo;
+    if (res.pdf) { $('okPdf').href = res.pdf; $('okPdf').classList.remove('hide'); } else $('okPdf').classList.add('hide');
     f.classList.add('hide'); $('okBox').classList.remove('hide'); $('submitBar').classList.add('hide');
     window.scrollTo(0, 0);
   } catch (err) {
@@ -382,6 +384,7 @@ function renderList() {
         <div class="acts">
           ${r.Status === 'Pending' ? `<button class="btn sm" onclick="openDlg(${i},'Approved')">Approve</button><button class="btn red sm" onclick="openDlg(${i},'Rejected')">Reject</button>` : ''}
           ${r.Status === 'Approved' ? `<button class="btn blu sm" onclick="openDlg(${i},'Closed')">Close Permit</button>` : ''}
+          ${r.PDF ? `<a class="btn sec sm" style="text-decoration:none" href="${esc(r.PDF)}" target="_blank" rel="noopener">PDF</a>` : ''}
           <button class="btn sec sm" onclick="printPermit(records[${i}])">Print</button>
           <button class="btn sec sm" onclick="shareWA(records[${i}])">WhatsApp</button>
         </div>
